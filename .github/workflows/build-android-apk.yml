@@ -30,7 +30,7 @@ jobs:
         run: npm install --global eas-cli@latest
 
       - name: Ensure Expo project is linked
-        run: eas project:init --non-interactive
+        run: eas project:init --non-interactive --force
 
       - name: Build APK with EAS
         run: eas build --platform android --profile preview --non-interactive --wait --json > build-result.json
