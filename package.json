@@ -15,7 +15,7 @@
     "build": "node tools/build.mjs",
     "typecheck": "tsc --noEmit",
     "golden": "node tools/golden.mjs",
-    "check": "npm run typecheck && npm run build && npm run golden",
+    "check": "npm run typecheck && npm run build && npm run golden && npm run test:pronunciation",
     "fuzz": "python3 tools/gen_fuzz.py && python3 tools/ref.py fuzz_corpus.json fuzz_expected.json && node tools/golden.mjs fuzz_corpus.json fuzz_expected.json",
     "fetch-models": "node tools/fetch_models.mjs",
     "serve": "node tools/serve.mjs 8100",
@@ -25,6 +25,7 @@
     "test:wav": "node tools/test_wav.mjs \"http://localhost:8100/web/index.html?auto=export\"",
     "test:voices": "node tools/test_voices.mjs",
     "test:sw": "node tools/test_sw.mjs",
+    "test:pronunciation": "node tools/test_pronunciation_dictionary.mjs",
     "pack": "node tools/pack.mjs",
     "pack:split": "node tools/pack.mjs --with-models --all --split 20",
     "build:site": "node tools/fetch_models.mjs --all && node tools/build.mjs && node tools/pack.mjs --with-models --all --split 20"
