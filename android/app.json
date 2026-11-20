@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "owner": "yelin19",
+    "name": "SayIt — မြန်မာ အသံ",
+    "slug": "sayit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.yelin19.sayit",
+      "versionCode": 1,
+      "permissions": ["INTERNET"],
+      "adaptiveIcon": {
+        "backgroundColor": "#0f1115",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": { "favicon": "./assets/favicon.png" },
+    "extra": {
+      "modelSource": "https://huggingface.co/yelin201875/Yelinvoice"
+    }
+  }
+}

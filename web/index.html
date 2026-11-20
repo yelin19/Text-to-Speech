@@ -223,8 +223,9 @@ const voiceLabel = (id) => VOICES.find((v) => v.id === id)?.label ?? id;
 let VOICE = params.get('voice') ?? VOICES[0].id;
 if (!VOICES.some((v) => v.id === VOICE)) VOICE = VOICES[0].id;
 
+const MODEL_REPO = 'https://huggingface.co/yelin201875/Yelinvoice/resolve/main/onnx';
 const filesFor = (id) => {
-  const base = `../models/${encodeURIComponent(id)}`;
+  const base = `${MODEL_REPO}/${encodeURIComponent(id)}`;
   return {
     encoder: { url: `${base}/encoder.onnx`, weight: 78_268_090, label: 'encoder' },
     decoder: { url: `${base}/decoder.onnx`, weight: 111_686_677, label: 'decoder' },

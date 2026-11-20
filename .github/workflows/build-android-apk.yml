@@ -1,0 +1,50 @@
+name: Build SayIt Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: EAS Android APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: android/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install --global eas-cli@latest
+
+      - name: Ensure Expo project is linked
+        run: eas project:init --non-interactive
+
+      - name: Build APK with EAS
+        run: eas build --platform android --profile preview --non-interactive --wait --json > build-result.json
+
+      - name: Download APK
+        run: |
+          APK_URL=$(node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('build-result.json','utf8')); const b=Array.isArray(x)?x[0]:x; process.stdout.write(b.artifacts?.buildUrl || b.buildUrl || '')")
+          test -n "$APK_URL"
+          curl --fail --location --retry 3 "$APK_URL" --output SayIt.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SayIt-Android-APK
+          path: android/SayIt.apk
+          if-no-files-found: error
+          retention-days: 30
