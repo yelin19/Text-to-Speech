@@ -23,6 +23,13 @@ jobs:
           cache: npm
           cache-dependency-path: android/package-lock.json
 
+      - name: Build local TTS app assets
+        working-directory: .
+        run: |
+          npm ci
+          npm run build
+          node android/scripts/prepare-local-web.mjs
+
       - name: Install dependencies
         run: npm ci
 

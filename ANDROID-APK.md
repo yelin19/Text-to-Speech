@@ -1,7 +1,7 @@
 # SayIt Android APK
 
-The `android/` folder is an Expo WebView wrapper around the deployed SagaPyaw app. It keeps the model online and loads the Burmese voice files from the SagaPyaw web app, whose model source is [Yelinvoice](https://huggingface.co/yelin201875/Yelinvoice).
+The `android/` project packages the SayIt interface, pronunciation dictionary, and JavaScript runtime inside the APK. The manual GitHub Actions workflow builds the root app, creates a single inline HTML/JavaScript shell (including the ONNX Runtime WebAssembly runtime), then runs the Expo EAS Android build. A separately deployed SagaPyaw website is not required.
 
-The repository workflow `.github/workflows/build-android-apk.yml` is manual by design. In GitHub, open **Actions → Build SayIt Android APK → Run workflow**. The workflow reads the repository secret named `EXPO_TOKEN`, runs an EAS internal Android build, downloads the resulting APK, and uploads it as the `SayIt-Android-APK` artifact.
+Voice-model weights are intentionally not bundled to keep the APK smaller. The selected Burmese voice is downloaded from [Yelinvoice](https://huggingface.co/yelin201875/Yelinvoice) the first time it is used, then cached on the device when supported. Internet access is therefore required for the first model download; the UI and pronunciation dictionary are included in the APK.
 
-The generated artifact is an installable debug/internal APK. The first launch requires Internet access because the voice model is not bundled into the APK.
+To build, open **GitHub → Actions → Build SayIt Android APK → Run workflow**. The workflow reads the repository secret `EXPO_TOKEN`, builds an installable internal APK, downloads it, and uploads it as the `SayIt-Android-APK` artifact.

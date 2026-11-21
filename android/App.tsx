@@ -2,8 +2,7 @@ import { useCallback, useState } from "react";
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { WebView } from "react-native-webview";
-
-const SAGAPYAW_URL = "https://sagapyaw.sagapyaw.workers.dev/";
+import { LOCAL_APP_BASE_URL, LOCAL_APP_HTML } from "./local-app-shell";
 
 export default function App() {
   const [reloadKey, setReloadKey] = useState(0);
@@ -20,10 +19,10 @@ export default function App() {
     return (
       <View style={styles.messageScreen}>
         <Text style={styles.logo}>SayIt</Text>
-        <Text style={styles.title}>Android APK wrapper</Text>
-        <Text style={styles.message}>SagaPyaw ကို APK ထဲမှာ WebView ဖြင့် ဖွင့်ပေးပါမယ်။</Text>
-        <Pressable style={styles.button} onPress={() => Linking.openURL(SAGAPYAW_URL)}>
-          <Text style={styles.buttonText}>Browser ဖြင့် ဖွင့်ပါ</Text>
+        <Text style={styles.title}>SayIt APK</Text>
+        <Text style={styles.message}>SayIt ကို APK ထဲတွင် ပါဝင်သော အက်ပ်ဖြင့် ဖွင့်ပေးပါမည်။</Text>
+        <Pressable style={styles.button} onPress={() => Linking.openURL("https://huggingface.co/yelin201875/Yelinvoice")}>
+          <Text style={styles.buttonText}>Voice model အကြောင်း</Text>
         </Pressable>
       </View>
     );
@@ -33,13 +32,13 @@ export default function App() {
     return (
       <View style={styles.messageScreen}>
         <Text style={styles.logo}>SayIt</Text>
-        <Text style={styles.title}>ချိတ်ဆက်၍ မရပါ</Text>
-        <Text style={styles.message}>Internet connection စစ်ဆေးပြီး ထပ်ကြိုးစားပါ။</Text>
+        <Text style={styles.title}>ဖွင့်မရပါ</Text>
+        <Text style={styles.message}>APK ထဲရှိ အက်ပ်ဖိုင်များ ဖွင့်မရပါ။ APK ကို ပြန်တင်သွင်းပြီး ထပ်ကြိုးစားပါ။</Text>
         <Pressable style={styles.button} onPress={retry}>
           <Text style={styles.buttonText}>ထပ်ကြိုးစားပါ</Text>
         </Pressable>
-        <Pressable style={styles.linkButton} onPress={() => Linking.openURL(SAGAPYAW_URL)}>
-          <Text style={styles.linkText}>Browser ဖြင့် ဖွင့်ပါ</Text>
+        <Pressable style={styles.linkButton} onPress={() => Linking.openURL("https://huggingface.co/yelin201875/Yelinvoice")}>
+          <Text style={styles.linkText}>အသံမော်ဒယ်၏ ရင်းမြစ်</Text>
         </Pressable>
       </View>
     );
@@ -58,7 +57,7 @@ export default function App() {
       ) : null}
       <WebView
         key={reloadKey}
-        source={{ uri: SAGAPYAW_URL }}
+        source={{ html: LOCAL_APP_HTML, baseUrl: LOCAL_APP_BASE_URL }}
         style={styles.webview}
         originWhitelist={["https://*"]}
         javaScriptEnabled
