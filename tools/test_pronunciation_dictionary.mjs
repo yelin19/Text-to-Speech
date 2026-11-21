@@ -3,7 +3,6 @@ import {
   applyPronunciationRules,
   DEFAULT_PRONUNCIATION_RULES,
   loadPronunciationRules,
-  MAX_PRONUNCIATION_RULES,
   parsePronunciationRulesText,
   savePronunciationRules,
 } from '../web/pronunciation-dictionary.js';
@@ -18,7 +17,7 @@ function memoryStorage() {
 
 assert.equal(
   applyPronunciationRules('နဂါး ပုဆိန်', DEFAULT_PRONUNCIATION_RULES),
-  'န ဂါး ပဆိန်',
+  'န ဂါး ပယ်ဆိန်',
   'built-in Burmese pronunciation rules are applied',
 );
 
@@ -39,17 +38,17 @@ assert.equal(
 );
 
 assert.deepEqual(
-  parsePronunciationRulesText('# QuickEdit rules\nနဂါး → န ဂါး\nပုဆိန် -> ပဆိန်\nအမည်\tအသံထွက်\nတစ် = တစ်'),
+  parsePronunciationRulesText('# QuickEdit rules\nနဂါး=န ဂါး\nပုဆိန်=ပယ်ဆိန်\nအမည်\tအသံထွက်\nတစ် → တစ်'),
   {
     rules: [
       { from: 'နဂါး', to: 'န ဂါး' },
-      { from: 'ပုဆိန်', to: 'ပဆိန်' },
+      { from: 'ပုဆိန်', to: 'ပယ်ဆိန်' },
       { from: 'အမည်', to: 'အသံထွက်' },
       { from: 'တစ်', to: 'တစ်' },
     ],
     errors: [],
   },
-  'TXT bulk import accepts arrow, tab, and equals separators while skipping comments',
+  'TXT bulk import accepts equals, arrow, and tab separators while skipping comments',
 );
 assert.equal(
   parsePronunciationRulesText('စကား → အသံ\nစကား → ထပ်တူ').errors.length,
@@ -68,11 +67,11 @@ assert.equal(savePronunciationRules(customRules, storage), true);
 assert.deepEqual(loadPronunciationRules(storage), customRules);
 assert.equal(savePronunciationRules(customRules, undefined), false);
 
-const excessRules = Array.from({ length: MAX_PRONUNCIATION_RULES + 5 }, (_, i) => ({
+const manyRules = Array.from({ length: 250 }, (_, i) => ({
   from: `word-${i}`,
   to: `say-${i}`,
 }));
-savePronunciationRules(excessRules, storage);
-assert.equal(loadPronunciationRules(storage).length, MAX_PRONUNCIATION_RULES);
+assert.equal(savePronunciationRules(manyRules, storage), true);
+assert.equal(loadPronunciationRules(storage).length, manyRules.length, 'rules are not truncated at 100 entries');
 
 console.log('pronunciation dictionary checks: ok');

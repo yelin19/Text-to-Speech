@@ -1,9 +1,8 @@
 export const PRONUNCIATION_STORAGE_KEY = 'sagapyaw-pronunciation-dictionary-v1';
-export const MAX_PRONUNCIATION_RULES = 100;
 
 export const DEFAULT_PRONUNCIATION_RULES = Object.freeze([
   Object.freeze({ from: 'နဂါး', to: 'န ဂါး' }),
-  Object.freeze({ from: 'ပုဆိန်', to: 'ပဆိန်' }),
+  Object.freeze({ from: 'ပုဆိန်', to: 'ပယ်ဆိန်' }),
 ]);
 
 export function parsePronunciationRulesText(text) {
@@ -18,7 +17,7 @@ export function parsePronunciationRulesText(text) {
     if (!line || line.startsWith('#')) continue;
     const delimiter = delimiters.find((candidate) => line.includes(candidate));
     if (!delimiter) {
-      errors.push(`${index + 1} ကြောင်း: မူရင်းစာသားနှင့် အသံထွက်စာသားကြားတွင် → သို့မဟုတ် TAB ခြားပေးပါ။`);
+      errors.push(`${index + 1} ကြောင်း: မူရင်းစာသားနှင့် အသံထွက်စာသားကြားတွင် = သို့မဟုတ် → ခြားပေးပါ။`);
       continue;
     }
     const splitAt = line.indexOf(delimiter);
@@ -54,7 +53,6 @@ function cleanRules(rules) {
     if (!from || !to || seen.has(from)) continue;
     seen.add(from);
     result.push({ from, to });
-    if (result.length >= MAX_PRONUNCIATION_RULES) break;
   }
   return result;
 }
