@@ -42,8 +42,13 @@ const bundled = await build({
 });
 if (bundled.outputFiles.length !== 1) throw new Error('Expected one self-contained app JavaScript bundle');
 
-const scriptTag = `<script type="module">${bundled.outputFiles[0].text}</script>`;
-const appHtml = html.replace(scriptMatch[0], scriptTag);
+// HTML's raw-text parser closes a script element even when </script appears
+// inside a JavaScript string. Escape the slash so the bundled code stays intact.
+const safeBundle = bundled.outputFiles[0].text.replace(/<\/script/giu, '<\\/script');
+const scriptTag = `<script type="module">${safeBundle}</script>`;
+// Use a callback so `$&`, `$'`, or other replacement tokens in bundled code
+// are not expanded by String.replace into extra copies of the source HTML.
+const appHtml = html.replace(scriptMatch[0], () => scriptTag);
 const serializedHtml = JSON.stringify(appHtml);
 await writeFile(
   outputFile,
