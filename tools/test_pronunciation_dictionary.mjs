@@ -4,6 +4,7 @@ import {
   DEFAULT_PRONUNCIATION_RULES,
   loadPronunciationRules,
   MAX_PRONUNCIATION_RULES,
+  parsePronunciationRulesText,
   savePronunciationRules,
 } from '../web/pronunciation-dictionary.js';
 
@@ -35,6 +36,30 @@ assert.equal(
   applyPronunciationRules('x', [{ from: 'x', to: 'xy' }, { from: 'xy', to: 'z' }]),
   'xy',
   'replacement output is not replaced recursively in the same pass',
+);
+
+assert.deepEqual(
+  parsePronunciationRulesText('# QuickEdit rules\nနဂါး → န ဂါး\nပုဆိန် -> ပဆိန်\nအမည်\tအသံထွက်\nတစ် = တစ်'),
+  {
+    rules: [
+      { from: 'နဂါး', to: 'န ဂါး' },
+      { from: 'ပုဆိန်', to: 'ပဆိန်' },
+      { from: 'အမည်', to: 'အသံထွက်' },
+      { from: 'တစ်', to: 'တစ်' },
+    ],
+    errors: [],
+  },
+  'TXT bulk import accepts arrow, tab, and equals separators while skipping comments',
+);
+assert.equal(
+  parsePronunciationRulesText('စကား → အသံ\nစကား → ထပ်တူ').errors.length,
+  1,
+  'TXT bulk import reports duplicate source words',
+);
+assert.equal(
+  parsePronunciationRulesText('မခွဲထားသောစာသား').errors.length,
+  1,
+  'TXT bulk import reports malformed lines instead of silently ignoring them',
 );
 
 const storage = memoryStorage();

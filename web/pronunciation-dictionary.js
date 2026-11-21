@@ -6,6 +6,43 @@ export const DEFAULT_PRONUNCIATION_RULES = Object.freeze([
   Object.freeze({ from: 'ပုဆိန်', to: 'ပဆိန်' }),
 ]);
 
+export function parsePronunciationRulesText(text) {
+  const rules = [];
+  const errors = [];
+  if (typeof text !== 'string') return { rules, errors: ['ဖိုင်အကြောင်းအရာကို စာသားအဖြစ် ဖတ်မရပါ။'] };
+
+  const delimiters = ['→', '=>', '->', '\t', '='];
+  const seen = new Set();
+  for (const [index, rawLine] of text.split(/\r?\n/u).entries()) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const delimiter = delimiters.find((candidate) => line.includes(candidate));
+    if (!delimiter) {
+      errors.push(`${index + 1} ကြောင်း: မူရင်းစာသားနှင့် အသံထွက်စာသားကြားတွင် → သို့မဟုတ် TAB ခြားပေးပါ။`);
+      continue;
+    }
+    const splitAt = line.indexOf(delimiter);
+    const from = line.slice(0, splitAt).trim();
+    const to = line.slice(splitAt + delimiter.length).trim();
+    if (!from || !to) {
+      errors.push(`${index + 1} ကြောင်း: မူရင်းစာသားနှင့် အသံထွက်စာသား နှစ်ခုလုံး ဖြည့်ပါ။`);
+      continue;
+    }
+    if (from.length > 100 || to.length > 200) {
+      errors.push(`${index + 1} ကြောင်း: မူရင်းစာသားကို စာလုံး 100 အထိ၊ အသံထွက်စာသားကို စာလုံး 200 အထိသာ ရေးနိုင်ပါသည်။`);
+      continue;
+    }
+    if (seen.has(from)) {
+      errors.push(`${index + 1} ကြောင်း: “${from}” မူရင်းစာသားကို ဖိုင်ထဲတွင် ထပ်နေပါသည်။`);
+      continue;
+    }
+    seen.add(from);
+    rules.push({ from, to });
+  }
+  if (!rules.length && !errors.length) errors.push('ထည့်သွင်းရန် စည်းမျဉ်း မတွေ့ပါ။');
+  return { rules, errors };
+}
+
 function cleanRules(rules) {
   if (!Array.isArray(rules)) return [];
   const seen = new Set();

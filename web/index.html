@@ -124,6 +124,12 @@
   .dict-row button { min-height: 38px; padding: 0 7px; }
   .dict-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .dict-add-grid button { grid-column: 1 / -1; }
+  .dict-import { display: grid; gap: 8px; margin-top: 12px; }
+  .dict-import code { color: var(--accent); font-family: var(--mono); }
+  .dict-import textarea { min-height: 110px; resize: vertical; font-size: 14px; line-height: 1.6; }
+  .dict-import-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dict-import-actions button { min-height: 44px; padding: 6px 8px; font-size: 14px; }
+  .dict-file-input { display: none; }
   .dict-reset { width: 100%; margin-top: 7px; }
   .dict-status { min-height: 1.5em; color: var(--ok); font-size: 12px; margin-top: 6px; }
   .out { display: none; }
@@ -197,14 +203,23 @@
 
   <details class="card" id="dictionarySettings">
     <summary>အသံထွက်အဘိဓာန် · ကိုယ်တိုင်ပြင်ဆင်ရန်</summary>
-    <p class="dict-note">မူရင်းစာလုံးနှင့် အသံထွက်စေလိုသော စာလုံးကို ထည့်ပါ။ ဖတ်မည် သို့မဟုတ် WAV ထုတ်မည်ကို နှိပ်သည့်အခါ စာသားကို TTS မော်ဒယ်ထံမပို့မီ အလိုအလျောက် အစားထိုးပြီး ဤစက်ထဲတွင် သိမ်းထားပါမည်။</p>
+    <p class="dict-note">မူရင်းစာလုံးနှင့် အသံထွက်စေလိုသော စာလုံးကို ထည့်ပါ။ ဖတ်မည် သို့မဟုတ် WAV ထုတ်မည်ကို နှိပ်သည့်အခါ TTS မော်ဒယ်ထံမပို့မီ အလိုအလျောက် အစားထိုးပြီး ဤဖုန်းထဲတွင် သိမ်းထားပါမည်။ အများအပြားကို TXT ဖိုင်မှ တစ်ခါတည်း ထည့်နိုင်ပါသည်။</p>
     <div class="dict-rules" id="dictionaryRules"></div>
     <div class="dict-add-grid">
       <input id="dictionaryFrom" type="text" maxlength="100" placeholder="အစားထိုးမည့်စာလုံး" aria-label="အစားထိုးမည့်စာလုံး" />
       <input id="dictionaryTo" type="text" maxlength="200" placeholder="ဖတ်စေလိုသည့်စာလုံး" aria-label="ဖတ်စေလိုသည့်စာလုံး" />
       <button id="dictionaryAdd" type="button">စည်းမျဉ်းအသစ် ထည့်ရန်</button>
     </div>
-    <button id="dictionaryReset" class="ghost dict-reset" type="button">မူလစည်းမျဉ်းများ ပြန်ထားရန်</button>
+    <div class="dict-import">
+      <div class="dict-note">QuickEdit တွင် UTF-8 စာသားဖိုင်ဖွင့်ပြီး စည်းမျဉ်းတစ်ခုကို တစ်ကြောင်းစီရေးပါ။ <code>→</code> ၏ ဘယ်ဘက်မှာ မူရင်းစာသား၊ ညာဘက်မှာ အသံထွက်စေလိုသောစာသား ရေးပါ။ ဖိုင်ခေါင်းစဉ်မလိုပါ။ အလွတ်လိုင်းနှင့် <code>#</code> ဖြင့်စသော မှတ်ချက်လိုင်းများကို ကျော်သွားပါမည်။ စုစုပေါင်း စည်းမျဉ်း 100 ခုအထိ ထည့်နိုင်ပါသည်။</div>
+      <input id="dictionaryFile" class="dict-file-input" type="file" accept=".txt,text/plain" aria-label="Pronunciation TXT ဖိုင်ရွေးရန်" />
+      <button id="dictionaryChooseFile" type="button">TXT ဖိုင်ရွေးပြီး ထည့်ရန်</button>
+      <textarea id="dictionaryBulkText" spellcheck="false" placeholder="နဂါး → န ဂါး&#10;ပုဆိန် → ပဆိန်&#10;စကားလုံးအသစ် → ဖတ်စေလိုသည့်ပုံစံ"></textarea>
+      <div class="dict-import-actions">
+        <button id="dictionaryImportText" type="button">ကူးထည့်ထားသောစာရင်းကို သိမ်းရန်</button>
+        <button id="dictionaryReset" class="ghost" type="button">မူလစည်းမျဉ်း ပြန်ထားရန်</button>
+      </div>
+    </div>
     <div class="dict-status" id="dictionaryStatus" aria-live="polite"></div>
   </details>
 
@@ -230,7 +245,7 @@ import * as ort from './vendor/ort.wasm.bundle.min.mjs';
 import { SagaSynthesizer, encodeWav } from '../dist/sagapyaw.mjs';
 import { StreamPlayer } from './player.js';
 import {
-  DEFAULT_PRONUNCIATION_RULES, MAX_PRONUNCIATION_RULES,
+  DEFAULT_PRONUNCIATION_RULES, MAX_PRONUNCIATION_RULES, parsePronunciationRulesText,
   loadPronunciationRules, savePronunciationRules, applyPronunciationRules,
 } from './pronunciation-dictionary.js';
 import {
@@ -338,6 +353,43 @@ function updatePronunciationRule(index, field, value) {
   }
   commitPronunciationRules(next, 'ပြင်ဆင်ချက်ကို သိမ်းလိုက်ပါပြီ။');
 }
+
+function importPronunciationText(text) {
+  const { rules, errors } = parsePronunciationRulesText(text);
+  if (errors.length) {
+    $('dictionaryStatus').textContent = errors.slice(0, 5).join(' ')
+      + (errors.length > 5 ? ` အခြားအမှား ${errors.length - 5} ခုရှိပါသည်။` : '');
+    return;
+  }
+  const merged = new Map(pronunciationRules.map((rule) => [rule.from, rule]));
+  for (const rule of rules) merged.set(rule.from, rule);
+  if (merged.size > MAX_PRONUNCIATION_RULES) {
+    $('dictionaryStatus').textContent = `ထည့်ပြီးနောက် စည်းမျဉ်း ${merged.size} ခုဖြစ်မည်။ အများဆုံး ${MAX_PRONUNCIATION_RULES} ခုသာ သိမ်းနိုင်ပါသည်။ မသုံးသောစည်းမျဉ်းများကို အရင်ဖျက်ပါ။`;
+    return;
+  }
+  commitPronunciationRules([...merged.values()], `${rules.length} ခု ထည့်သွင်း/ပြင်ဆင်ပြီး ဖုန်းထဲတွင် သိမ်းလိုက်ပါပြီ။`);
+}
+
+$('dictionaryChooseFile').addEventListener('click', () => $('dictionaryFile').click());
+$('dictionaryFile').addEventListener('change', async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 1024 * 1024) {
+      $('dictionaryStatus').textContent = 'TXT ဖိုင်သည် 1 MB ထက်ကြီးနေပါသည်။ ဖိုင်ကို အပိုင်းခွဲပြီး ထည့်ပါ။';
+      return;
+    }
+    const text = await file.text();
+    $('dictionaryBulkText').value = text;
+    importPronunciationText(text);
+  } catch {
+    $('dictionaryStatus').textContent = 'TXT ဖိုင်ကို ဖတ်မရပါ။ UTF-8 အဖြစ် QuickEdit မှ သိမ်းပြီး ထပ်ရွေးပါ။';
+  } finally {
+    event.target.value = '';
+  }
+});
+
+$('dictionaryImportText').addEventListener('click', () => importPronunciationText($('dictionaryBulkText').value));
 
 $('dictionaryAdd').addEventListener('click', () => {
   const from = $('dictionaryFrom').value.trim();
